@@ -149,22 +149,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener, Go
 
 
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
 
-
-                GoogleSignInAccount resultados = result.getSignInAccount();
-
-
-                Intent i = new Intent(Login.this, Background.class);
-
-
-                startActivity(i);
-
-                //finish();
-
-
-            }
-
+            handleSignInResult(result);
         }
     }
 
@@ -180,12 +166,33 @@ public class Login extends AppCompatActivity implements View.OnClickListener, Go
 
     private void FirebaseAuthAuthWithGoogle(GoogleSignInAccount signInAccount) {
 
-        AuthCredential credencial = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
-        auth.signInWithCredential(credencial).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(),null);
+
+        String id = signInAccount.getId();
+        String nombre = signInAccount.getDisplayName();
+        String correo = signInAccount.getEmail();
+        String telefono = "sin telefono";
+        String contraseña = "logueado con google";
+        String tipo = Usuario.EMPRENDEDOR;
+
+        Usuario usuario = new Usuario();
+
+        usuario.setUid(id);
+        usuario.setNombre(nombre);
+        usuario.setEmail(correo);
+        usuario.setTelefono(telefono);
+        usuario.setContrasenia(contraseña);
+        usuario.setTipo(tipo);
+
+        DatabaseReference reference = db.getReference().child(usuario.getTipo()).child(id);
+
+        reference.setValue(usuario);
+        auth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if (!task.isSuccessful()) {
-                    Toast.makeText(Login.this, "Login con google fallido", Toast.LENGTH_SHORT).show();
+                if (!task.isSuccessful()){
+
+                    Toast.makeText(getApplicationContext(),"la autentificacion con google fallo",Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -269,36 +276,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener, Go
 
     private void firebasecongoogle(GoogleSignInAccount signInAccount) {
 
-        AuthCredential credential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(),null);
 
-        String id = signInAccount.getId();
-        String nombre = signInAccount.getDisplayName();
-        String correo = signInAccount.getEmail();
-        String telefono = "sin telefono";
-        String contraseña = "logueado con google";
-        String tipo = Usuario.EMPRENDEDOR;
-
-        Usuario usuario = new Usuario();
-
-        usuario.setUid(id);
-        usuario.setNombre(nombre);
-        usuario.setEmail(correo);
-        usuario.setTelefono(telefono);
-        usuario.setContrasenia(contraseña);
-        usuario.setTipo(tipo);
-
-        DatabaseReference reference = db.getReference().child(usuario.getTipo()).child(id);
-
-        reference.setValue(usuario);
-        auth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (!task.isSuccessful()){
-
-                    Toast.makeText(getApplicationContext(),"la autentificacion con google fallo",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
 
     }
@@ -316,9 +294,10 @@ public class Login extends AppCompatActivity implements View.OnClickListener, Go
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-        if (firebaseAuthListener != null) {
-            auth.removeAuthStateListener(firebaseAuthListener);
-        }
+       // if (firebaseAuthListener != null) {
+        //   auth.removeAuthStateListener(firebaseAuthListener);
+    //
+        //   }
 
     }
 }
